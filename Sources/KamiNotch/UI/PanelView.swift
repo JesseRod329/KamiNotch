@@ -14,8 +14,7 @@ struct PanelView: View {
             .pickerStyle(.segmented)
 
             ZStack {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(.ultraThinMaterial)
+                GlassBackgroundView()
                 TerminalPanelView()
                     .padding(12)
             }
