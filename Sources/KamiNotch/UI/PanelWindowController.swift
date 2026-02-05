@@ -7,11 +7,17 @@ final class PanelWindowController {
     private let panel: NSPanel
     private var observation: Any?
 
-    init(rootView: AnyView, panelState: PanelState, terminalManager: TerminalSessionManager) {
+    init(
+        rootView: AnyView,
+        panelState: PanelState,
+        terminalManager: TerminalSessionManager,
+        workspaceStore: WorkspaceStore
+    ) {
         let contentView = NSHostingView(
             rootView: rootView
                 .environmentObject(panelState)
                 .environmentObject(terminalManager)
+                .environmentObject(workspaceStore)
         )
         panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 600, height: 360),

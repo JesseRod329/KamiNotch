@@ -8,9 +8,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let preferences = AppPreferences()
     private let hotkeyManager = HotkeyManager()
     private let hotkeySetupWindow = HotkeySetupWindowController()
-    private let terminalManager = TerminalSessionManager()
+    private let terminalManager: TerminalSessionManager
+    private let workspaceStore: WorkspaceStore
     private var statusItem: NSStatusItem?
     private var panelController: PanelWindowController?
+
+    override init() {
+        terminalManager = TerminalSessionManager()
+        workspaceStore = WorkspaceStore(terminalManager: terminalManager)
+        super.init()
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApplication.shared.setActivationPolicy(.accessory)
@@ -24,7 +31,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panelController = PanelWindowController(
             rootView: AnyView(PanelView()),
             panelState: panelState,
-            terminalManager: terminalManager
+            terminalManager: terminalManager,
+            workspaceStore: workspaceStore
         )
 
         hotkeyManager.registerToggle(action: { [weak self] in
