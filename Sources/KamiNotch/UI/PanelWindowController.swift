@@ -7,6 +7,7 @@ final class PanelWindowController {
     private let panel: NSPanel
     private var observation: Any?
     private var anchorScreen: NSScreen?
+    private let panelState: PanelState
 
     init(
         rootView: AnyView,
@@ -15,6 +16,7 @@ final class PanelWindowController {
         workspaceStore: WorkspaceStore,
         themeStore: ThemeStore
     ) {
+        self.panelState = panelState
         let contentView = NSHostingView(
             rootView: rootView
                 .environmentObject(panelState)
