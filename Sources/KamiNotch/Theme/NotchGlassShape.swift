@@ -1,20 +1,23 @@
 import SwiftUI
 
 struct NotchGlassShape: Shape {
-    let cornerRadius: CGFloat
+    let bottomCornerRadius: CGFloat
     let notchWidth: CGFloat
     let notchHeight: CGFloat
     let notchCornerRadius: CGFloat
 
     func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let clampedNotchWidth = min(notchWidth, rect.width - cornerRadius * 2)
+        var path = UnevenRoundedRectangle(
+            cornerRadii: RectangleCornerRadii(
+                topLeading: 0,
+                bottomLeading: bottomCornerRadius,
+                bottomTrailing: bottomCornerRadius,
+                topTrailing: 0
+            ),
+            style: .continuous
+        ).path(in: rect)
+        let clampedNotchWidth = min(notchWidth, rect.width - 8)
         let clampedNotchHeight = min(notchHeight, rect.height * 0.5)
-
-        path.addRoundedRect(
-            in: rect,
-            cornerSize: CGSize(width: cornerRadius, height: cornerRadius)
-        )
 
         let notchRect = CGRect(
             x: rect.midX - clampedNotchWidth / 2,

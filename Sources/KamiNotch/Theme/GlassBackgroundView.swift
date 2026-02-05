@@ -6,7 +6,7 @@ struct GlassBackgroundView: View {
     var body: some View {
         let theme = themeStore.currentTheme
         let shape = NotchGlassShape(
-            cornerRadius: 20,
+            bottomCornerRadius: 20,
             notchWidth: NotchGeometry.width,
             notchHeight: NotchGeometry.height,
             notchCornerRadius: NotchGeometry.cornerRadius
