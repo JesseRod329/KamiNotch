@@ -45,9 +45,8 @@ final class NotchHitWindowController {
     }
 
     private func notchFrame(for screen: NSScreen) -> NSRect {
-        let menuBarHeight = screen.frame.maxY - screen.visibleFrame.maxY
-        let height = max(menuBarHeight, 28)
-        let width: CGFloat = 220
+        let height = NotchGeometry.height
+        let width: CGFloat = NotchGeometry.width
         let originX = screen.frame.midX - (width / 2)
         let originY = screen.frame.maxY - height
         return NSRect(x: originX, y: originY, width: width, height: height)

@@ -5,15 +5,19 @@ struct GlassBackgroundView: View {
 
     var body: some View {
         let theme = themeStore.currentTheme
-        RoundedRectangle(cornerRadius: 20)
-            .fill(material(for: theme.blurStrength))
+        let shape = NotchGlassShape(
+            cornerRadius: 20,
+            notchWidth: NotchGeometry.width,
+            notchHeight: NotchGeometry.height,
+            notchCornerRadius: NotchGeometry.cornerRadius
+        )
+        shape
+            .fill(material(for: theme.blurStrength), style: FillStyle(eoFill: true))
             .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(theme.tint.swiftUIColor.opacity(0.12))
+                shape.fill(theme.tint.swiftUIColor.opacity(0.12), style: FillStyle(eoFill: true))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.white.opacity(0.22), lineWidth: 0.6)
+                shape.stroke(Color.white.opacity(0.22), lineWidth: 0.6)
             )
             .shadow(
                 color: theme.tint.swiftUIColor.opacity(theme.glowIntensity * 0.6),

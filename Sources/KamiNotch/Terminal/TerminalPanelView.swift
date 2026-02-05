@@ -25,6 +25,7 @@ struct TerminalPanelView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.top, NotchGeometry.contentTopPadding)
         }
         .onAppear {
             workspaceStore.ensureInitialTabs()
