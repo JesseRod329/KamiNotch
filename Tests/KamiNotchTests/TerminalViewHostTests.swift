@@ -5,7 +5,7 @@ import SwiftTerm
 @MainActor
 final class TerminalViewHostTests: XCTestCase {
     func test_terminal_view_host_initializes() {
-        _ = TerminalViewHost(view: LocalProcessTerminalView(frame: .zero))
+        _ = TerminalViewHost(view: LocalProcessTerminalView(frame: .zero), font: .monospacedSystemFont(ofSize: 12, weight: .regular))
         XCTAssertTrue(true)
     }
 }

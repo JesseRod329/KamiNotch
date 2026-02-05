@@ -10,12 +10,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let hotkeySetupWindow = HotkeySetupWindowController()
     private let terminalManager: TerminalSessionManager
     private let workspaceStore: WorkspaceStore
+    let themeStore: ThemeStore
     private var statusItem: NSStatusItem?
     private var panelController: PanelWindowController?
 
     override init() {
         terminalManager = TerminalSessionManager()
         workspaceStore = WorkspaceStore(terminalManager: terminalManager)
+        themeStore = ThemeStore()
         super.init()
     }
 
@@ -32,7 +34,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             rootView: AnyView(PanelView()),
             panelState: panelState,
             terminalManager: terminalManager,
-            workspaceStore: workspaceStore
+            workspaceStore: workspaceStore,
+            themeStore: themeStore
         )
 
         hotkeyManager.registerToggle(action: { [weak self] in
