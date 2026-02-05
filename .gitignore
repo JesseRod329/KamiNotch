@@ -19,3 +19,7 @@ dist/
 
 # Logs
 *.log
+
+# Local signing artifacts
+*.p12
+*.cer

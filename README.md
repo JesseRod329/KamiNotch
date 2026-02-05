@@ -9,7 +9,10 @@
 KamiNotch is a menubar-only macOS terminal HUD that drops from the notch with a clean liquid-glass look. It keeps your shell running when collapsed, so you can pop it open and keep working.
 
 **Status**
-Prototype in progress. Core HUD, hotkey, terminal, workspaces, themes, and DMG packaging are implemented. Notarization and polish are still in progress.
+Alpha. Core HUD, hotkey, terminal, workspaces, themes, and DMG packaging are implemented.
+
+- Official GitHub releases are intended to be **Developer ID signed + notarized + stapled**.
+- Local builds are development artifacts and are not intended for end-user distribution.
 
 - Design doc: `docs/plans/2026-02-05-macos-liquid-glass-terminal-hud-design.md`
 
@@ -21,18 +24,28 @@ Prototype in progress. Core HUD, hotkey, terminal, workspaces, themes, and DMG p
 - Size presets: Compact, Tall, Full.
 
 **Screenshots**
-- `docs/screenshots/hud.png` (coming soon)
-- `docs/screenshots/workspaces.png` (coming soon)
-- `docs/screenshots/theme-settings.png` (coming soon)
+No production screenshots are committed yet. Before broader promotion, add:
+- HUD open under notch.
+- Workspace tab switcher.
+- Theme settings panel.
 
-**Getting Started**
-Requirements:
-- macOS with Xcode and Swift 6 toolchain.
-
-Install from release (recommended):
+**Install (Official Release)**
 1. Click [Download for macOS](https://github.com/JesseRod329/KamiNotch/releases/latest/download/KamiNotch.dmg).
 2. Drag `KamiNotch.app` to Applications.
-3. Launch from Applications.
+3. Launch from Applications (double-click).
+
+Optional verification:
+```bash
+spctl -a -vv /Applications/KamiNotch.app
+codesign -dv --verbose=4 /Applications/KamiNotch.app
+scripts/verify-release.sh /Applications/KamiNotch.app /path/to/KamiNotch.dmg
+```
+
+If a published release still shows a Gatekeeper malware-verification warning, treat it as a release pipeline defect and open an issue.
+
+**Development**
+Requirements:
+- macOS with Xcode and Swift 6 toolchain.
 
 Build a local DMG:
 ```bash
@@ -52,15 +65,27 @@ swift test
 ```
 
 Notes:
-- Current DMG is ad-hoc signed and not notarized yet. If Gatekeeper blocks first launch, right-click `KamiNotch.app` and choose Open.
-- If you convert this to an Xcode app target, disable App Sandbox so the embedded shell can run local commands.
+- Local DMGs are ad-hoc signed by default unless you set `CODESIGN_IDENTITY` and numeric bundle versions.
+- Signing and notarization setup is documented in `docs/release-notarization.md`.
 
-Release DMG from GitHub Actions:
+Release from GitHub Actions:
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
 ```
-The `Release DMG` workflow builds `KamiNotch.dmg` and attaches it to the GitHub release.
+The `Release DMG` workflow signs, notarizes, staples, and uploads `KamiNotch.dmg`.
+
+**Security + Data Model**
+- Security model: `docs/security-model.md`
+- Stored app files:
+  - `~/Library/Application Support/KamiNotch/workspaces.json`
+  - `~/Library/Application Support/KamiNotch/theme.json`
+- The app does not persist terminal output itself. Your shell may still persist history in your normal shell history files (for example `~/.zsh_history`).
+
+**Display Behavior**
+- Notch devices: panel is anchored to top-center around notch geometry.
+- Non-notch displays: panel still anchors to top-center.
+- Multi-display setups: current notch hit target follows the main display; improvements are planned for per-display behavior.
 
 **Tech Direction**
 - SwiftUI UI with AppKit window control.
@@ -76,8 +101,9 @@ The `Release DMG` workflow builds `KamiNotch.dmg` and attaches it to the GitHub 
 - [x] Workspace persistence and restore.
 - [x] Theme system and preset packs.
 - [x] App packaging (DMG build + release upload).
-- [ ] Notarization.
+- [ ] Release screenshots and demo media.
 - [ ] UI polish and animations.
+- [ ] Multi-display notch target behavior.
 
 **Contributing**
 See `CONTRIBUTING.md`.

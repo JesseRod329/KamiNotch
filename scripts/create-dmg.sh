@@ -5,11 +5,14 @@ APP_NAME="KamiNotch"
 BUNDLE_ID="com.jesserod329.kaminotch"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+CODESIGN_IDENTITY="${CODESIGN_IDENTITY:-}"
 
 VERSION="${VERSION:-}"
 if [[ -z "$VERSION" ]]; then
   VERSION="$(git -C "$REPO_DIR" describe --tags --always --dirty 2>/dev/null || git -C "$REPO_DIR" rev-parse --short HEAD)"
 fi
+BUNDLE_SHORT_VERSION="${BUNDLE_SHORT_VERSION:-$VERSION}"
+BUNDLE_VERSION="${BUNDLE_VERSION:-$VERSION}"
 
 OUTPUT_DIR="${OUTPUT_DIR:-$REPO_DIR/dist}"
 OUTPUT_NAME="${OUTPUT_NAME:-${APP_NAME}-${VERSION}.dmg}"
@@ -27,6 +30,17 @@ fi
 if ! command -v hdiutil >/dev/null 2>&1; then
   echo "error: hdiutil is required (run on macOS)" >&2
   exit 1
+fi
+
+if [[ -n "$CODESIGN_IDENTITY" ]]; then
+  if [[ ! "$BUNDLE_SHORT_VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+    echo "error: BUNDLE_SHORT_VERSION must be numeric when CODESIGN_IDENTITY is set (got: $BUNDLE_SHORT_VERSION)" >&2
+    exit 1
+  fi
+  if [[ ! "$BUNDLE_VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+    echo "error: BUNDLE_VERSION must be numeric when CODESIGN_IDENTITY is set (got: $BUNDLE_VERSION)" >&2
+    exit 1
+  fi
 fi
 
 echo "Building release binary..."
@@ -61,9 +75,9 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
-  <string>${VERSION}</string>
+  <string>${BUNDLE_SHORT_VERSION}</string>
   <key>CFBundleVersion</key>
-  <string>${VERSION}</string>
+  <string>${BUNDLE_VERSION}</string>
   <key>LSMinimumSystemVersion</key>
   <string>15.0</string>
   <key>NSHighResolutionCapable</key>
@@ -75,9 +89,15 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
 PLIST
 
 if command -v codesign >/dev/null 2>&1; then
-  echo "Applying ad-hoc code signature..."
-  if ! codesign --force --deep --sign - "$APP_BUNDLE"; then
-    echo "warning: ad-hoc codesign failed; continuing" >&2
+  if [[ -n "$CODESIGN_IDENTITY" ]]; then
+    echo "Signing app with Developer ID identity..."
+    codesign --force --deep --options runtime --timestamp --sign "$CODESIGN_IDENTITY" "$APP_BUNDLE"
+    codesign --verify --deep --strict --verbose=2 "$APP_BUNDLE"
+  else
+    echo "Applying ad-hoc code signature (dev build)..."
+    if ! codesign --force --deep --sign - "$APP_BUNDLE"; then
+      echo "warning: ad-hoc codesign failed; continuing" >&2
+    fi
   fi
 fi
 

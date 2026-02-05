@@ -15,10 +15,89 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build DMG
+      - name: Validate release secrets
+        env:
+          MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_CERTIFICATE_NAME: ${{ secrets.MACOS_CERTIFICATE_NAME }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        run: |
+          REQUIRED=(
+            MACOS_CERTIFICATE_P12_BASE64
+            MACOS_CERTIFICATE_PASSWORD
+            MACOS_CERTIFICATE_NAME
+            APPLE_ID
+            APPLE_TEAM_ID
+            APPLE_APP_SPECIFIC_PASSWORD
+          )
+          for key in "${REQUIRED[@]}"; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "error: missing required secret $key" >&2
+              exit 1
+            fi
+          done
+
+      - name: Import Developer ID certificate
+        id: signing
+        env:
+          MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: |
+          CERT_PATH="$RUNNER_TEMP/developer-id.p12"
+          KEYCHAIN_PATH="$RUNNER_TEMP/kaminotch-signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 12)"
+
+          if ! echo "$MACOS_CERTIFICATE_P12_BASE64" | base64 --decode > "$CERT_PATH" 2>/dev/null; then
+            echo "$MACOS_CERTIFICATE_P12_BASE64" | base64 -D > "$CERT_PATH"
+          fi
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH"
+          security default-keychain -d user -s "$KEYCHAIN_PATH"
+          security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$MACOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          echo "keychain=$KEYCHAIN_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Build signed DMG
+        env:
+          MACOS_CERTIFICATE_NAME: ${{ secrets.MACOS_CERTIFICATE_NAME }}
         run: |
           chmod +x scripts/create-dmg.sh
-          VERSION="${GITHUB_REF_NAME#v}" OUTPUT_NAME="KamiNotch.dmg" scripts/create-dmg.sh
+          VERSION="${GITHUB_REF_NAME#v}" \
+          BUNDLE_SHORT_VERSION="${GITHUB_REF_NAME#v}" \
+          BUNDLE_VERSION="${GITHUB_REF_NAME#v}" \
+          OUTPUT_NAME="KamiNotch.dmg" \
+          CODESIGN_IDENTITY="$MACOS_CERTIFICATE_NAME" \
+          scripts/create-dmg.sh
+
+      - name: Store notarytool credentials
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        run: |
+          xcrun notarytool store-credentials "KAMINOTCH_NOTARY" \
+            --apple-id "$APPLE_ID" \
+            --team-id "$APPLE_TEAM_ID" \
+            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+            --keychain "${{ steps.signing.outputs.keychain }}"
+
+      - name: Notarize and staple DMG
+        run: |
+          chmod +x scripts/notarize-dmg.sh
+          NOTARY_PROFILE="KAMINOTCH_NOTARY" \
+          NOTARY_KEYCHAIN="${{ steps.signing.outputs.keychain }}" \
+          scripts/notarize-dmg.sh dist/KamiNotch.dmg
+
+      - name: Verify signed and notarized artifacts
+        run: |
+          chmod +x scripts/verify-release.sh
+          scripts/verify-release.sh .build/KamiNotch.app dist/KamiNotch.dmg
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v2
