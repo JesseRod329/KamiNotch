@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PanelView: View {
     @EnvironmentObject var panelState: PanelState
+    @EnvironmentObject var terminalManager: TerminalSessionManager
 
     var body: some View {
         VStack(spacing: 12) {
@@ -15,8 +16,8 @@ struct PanelView: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 20)
                     .fill(.ultraThinMaterial)
-                Text("KamiNotch")
-                    .font(.title2)
+                TerminalPanelView()
+                    .padding(12)
             }
             .frame(width: 600, height: 320)
         }

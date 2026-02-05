@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let preferences = AppPreferences()
     private let hotkeyManager = HotkeyManager()
     private let hotkeySetupWindow = HotkeySetupWindowController()
+    private let terminalManager = TerminalSessionManager()
     private var statusItem: NSStatusItem?
     private var panelController: PanelWindowController?
 
@@ -20,7 +21,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         item.button?.target = self
         statusItem = item
 
-        panelController = PanelWindowController(rootView: AnyView(PanelView()), panelState: panelState)
+        panelController = PanelWindowController(
+            rootView: AnyView(PanelView()),
+            panelState: panelState,
+            terminalManager: terminalManager
+        )
 
         hotkeyManager.registerToggle(action: { [weak self] in
             self?.togglePanel()
