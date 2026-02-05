@@ -26,7 +26,9 @@ final class NotchHitWindowController {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.updateFrame()
+            Task { @MainActor [weak self] in
+                self?.updateFrame()
+            }
         }
     }
 
@@ -47,8 +49,8 @@ final class NotchHitWindowController {
     private func notchFrame(for screen: NSScreen) -> NSRect {
         let height = NotchGeometry.height
         let width: CGFloat = NotchGeometry.width
-        let originX = screen.frame.midX - (width / 2)
-        let originY = screen.frame.maxY - height
+        let originX = screen.frame.midX - (width / 2) + NotchGeometry.panelXOffset
+        let originY = screen.frame.maxY - height + NotchGeometry.panelYOffset
         return NSRect(x: originX, y: originY, width: width, height: height)
     }
 }

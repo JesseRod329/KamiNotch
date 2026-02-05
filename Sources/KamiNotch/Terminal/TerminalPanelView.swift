@@ -10,6 +10,7 @@ struct TerminalPanelView: View {
             HStack {
                 WorkspaceSwitcherView()
                 Spacer()
+                PanelSizePickerView()
                 ThemePresetMenuView()
             }
 
@@ -25,8 +26,8 @@ struct TerminalPanelView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.top, NotchGeometry.contentTopPadding)
         }
+        .padding(.top, NotchGeometry.contentTopPadding)
         .onAppear {
             workspaceStore.ensureInitialTabs()
         }

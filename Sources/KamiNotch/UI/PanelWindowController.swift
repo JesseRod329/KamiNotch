@@ -1,5 +1,6 @@
 import AppKit
 import Combine
+import QuartzCore
 import SwiftUI
 
 @MainActor
@@ -8,6 +9,9 @@ final class PanelWindowController {
     private var observation: Any?
     private var anchorScreen: NSScreen?
     private let panelState: PanelState
+    private let expandDuration: TimeInterval = 0.28
+    private let collapseDuration: TimeInterval = 0.22
+    private let resizeDuration: TimeInterval = 0.20
 
     init(
         rootView: AnyView,
@@ -46,49 +50,84 @@ final class PanelWindowController {
     }
 
     private func resize(for preset: PanelSizePreset) {
-        guard let screen = anchorScreen ?? panel.screen ?? NSScreen.main else {
-            var frame = panel.frame
-            frame.size = preset.baseSize
-            panel.setFrame(frame, display: true, animate: true)
+        guard let screen = anchorScreen ?? panel.screen ?? NSScreen.main else { return }
+        let targetFrame = expandedFrame(for: preset, on: screen)
+        if panel.isVisible {
+            animateFrame(to: targetFrame, duration: resizeDuration, alpha: 1)
             return
         }
-
-        if preset == .full {
-            let frame = screen.frame
-            panel.setFrame(frame, display: true, animate: true)
-            return
-        }
-
-        let maxSize = screen.frame.size
-        let size = preset.baseSize
-        let clamped = CGSize(
-            width: min(size.width, maxSize.width * 0.98),
-            height: min(size.height, maxSize.height * 0.98)
-        )
-        var frame = panel.frame
-        frame.size = clamped
-        panel.setFrame(frame, display: true, animate: true)
-        positionUnderNotch(on: screen)
+        panel.setFrame(targetFrame, display: false)
     }
 
     func show(on screen: NSScreen?) {
-        let targetScreen = screen ?? NSScreen.main
+        guard let targetScreen = screen ?? NSScreen.main else { return }
         anchorScreen = targetScreen
-        resize(for: panelState.sizePreset)
+        let start = collapsedFrame(on: targetScreen)
+        let target = expandedFrame(for: panelState.sizePreset, on: targetScreen)
+        panel.alphaValue = 0.95
+        panel.setFrame(start, display: false)
         panel.makeKeyAndOrderFront(nil)
+        animateFrame(to: target, duration: expandDuration, alpha: 1)
         NSApp.activate(ignoringOtherApps: true)
     }
 
     func hide() {
-        panel.orderOut(nil)
+        guard panel.isVisible else { return }
+        guard let screen = anchorScreen ?? panel.screen ?? NSScreen.main else {
+            panel.orderOut(nil)
+            return
+        }
+        let end = collapsedFrame(on: screen)
+        animateFrame(to: end, duration: collapseDuration, alpha: 0.92)
+        DispatchQueue.main.asyncAfter(deadline: .now() + collapseDuration) { [weak self] in
+            guard let self, !self.panelState.isVisible else { return }
+            self.panel.orderOut(nil)
+            self.panel.alphaValue = 1
+        }
     }
 
-    private func positionUnderNotch(on screen: NSScreen) {
-        let width = panel.frame.width
-        let height = panel.frame.height
-        let originX = screen.frame.midX - (width / 2)
-        let originY = screen.frame.maxY - height
-        panel.setFrameOrigin(CGPoint(x: originX, y: originY))
+    private func expandedFrame(for preset: PanelSizePreset, on screen: NSScreen) -> NSRect {
+        if preset == .full {
+            return NSRect(
+                x: screen.frame.minX,
+                y: screen.frame.minY,
+                width: screen.frame.width,
+                height: screen.frame.height
+            )
+        }
+        let size = clampedSize(for: preset, on: screen)
+        let originX = screen.frame.midX - (size.width / 2) + NotchGeometry.panelXOffset
+        let originY = screen.frame.maxY - size.height + NotchGeometry.panelYOffset
+        return NSRect(x: originX, y: originY, width: size.width, height: size.height)
+    }
+
+    private func collapsedFrame(on screen: NSScreen) -> NSRect {
+        let size = CGSize(width: NotchGeometry.collapsedWidth, height: NotchGeometry.collapsedHeight)
+        let originX = screen.frame.midX - (size.width / 2) + NotchGeometry.panelXOffset
+        let originY = screen.frame.maxY - size.height + NotchGeometry.panelYOffset
+        return NSRect(x: originX, y: originY, width: size.width, height: size.height)
+    }
+
+    private func clampedSize(for preset: PanelSizePreset, on screen: NSScreen) -> CGSize {
+        let maxSize = screen.frame.size
+        let size = preset.baseSize
+        return CGSize(
+            width: min(size.width, maxSize.width * 0.98),
+            height: min(size.height, maxSize.height * 0.98)
+        )
+    }
+
+    private func animateFrame(
+        to frame: NSRect,
+        duration: TimeInterval,
+        alpha: CGFloat
+    ) {
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = duration
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            panel.animator().setFrame(frame, display: true)
+            panel.animator().alphaValue = alpha
+        }
     }
 }
 
