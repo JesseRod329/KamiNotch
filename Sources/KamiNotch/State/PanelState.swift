@@ -5,11 +5,11 @@ enum PanelSizePreset: String, CaseIterable {
     case tall
     case full
 
-    var windowSize: CGSize {
+    var baseSize: CGSize {
         switch self {
-        case .compact: return CGSize(width: 600, height: 360)
-        case .tall: return CGSize(width: 680, height: 520)
-        case .full: return CGSize(width: 760, height: 700)
+        case .compact: return CGSize(width: 640, height: 380)
+        case .tall: return CGSize(width: 720, height: 540)
+        case .full: return CGSize(width: 900, height: 700)
         }
     }
 

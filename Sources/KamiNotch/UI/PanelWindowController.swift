@@ -22,7 +22,7 @@ final class PanelWindowController {
                 .environmentObject(workspaceStore)
                 .environmentObject(themeStore)
         )
-        let initialSize = panelState.sizePreset.windowSize
+        let initialSize = panelState.sizePreset.baseSize
         panel = NotchPanel(
             contentRect: NSRect(x: 0, y: 0, width: initialSize.width, height: initialSize.height),
             styleMask: [.titled, .fullSizeContentView],
@@ -44,21 +44,35 @@ final class PanelWindowController {
     }
 
     private func resize(for preset: PanelSizePreset) {
-        let size = preset.windowSize
-        var frame = panel.frame
-        frame.size = size
-        panel.setFrame(frame, display: true, animate: true)
-        if let screen = anchorScreen ?? panel.screen {
-            positionUnderNotch(on: screen)
+        guard let screen = anchorScreen ?? panel.screen ?? NSScreen.main else {
+            var frame = panel.frame
+            frame.size = preset.baseSize
+            panel.setFrame(frame, display: true, animate: true)
+            return
         }
+
+        if preset == .full {
+            let frame = screen.visibleFrame
+            panel.setFrame(frame, display: true, animate: true)
+            return
+        }
+
+        let maxSize = screen.visibleFrame.size
+        let size = preset.baseSize
+        let clamped = CGSize(
+            width: min(size.width, maxSize.width * 0.98),
+            height: min(size.height, maxSize.height * 0.98)
+        )
+        var frame = panel.frame
+        frame.size = clamped
+        panel.setFrame(frame, display: true, animate: true)
+        positionUnderNotch(on: screen)
     }
 
     func show(on screen: NSScreen?) {
         let targetScreen = screen ?? NSScreen.main
         anchorScreen = targetScreen
-        if let targetScreen {
-            positionUnderNotch(on: targetScreen)
-        }
+        resize(for: panelState.sizePreset)
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
