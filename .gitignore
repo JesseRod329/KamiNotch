@@ -15,6 +15,7 @@ DerivedData/
 # SwiftPM
 .build/
 .swiftpm/xcode/
+dist/
 
 # Logs
 *.log

@@ -1,0 +1,26 @@
+name: Release DMG
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-upload-dmg:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build DMG
+        run: |
+          chmod +x scripts/create-dmg.sh
+          VERSION="${GITHUB_REF_NAME#v}" OUTPUT_NAME="KamiNotch.dmg" scripts/create-dmg.sh
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/KamiNotch.dmg
