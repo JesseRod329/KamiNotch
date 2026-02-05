@@ -1,5 +1,10 @@
 # KamiNotch
 
+![License](https://img.shields.io/github/license/JesseRod329/KamiNotch)
+![Platform](https://img.shields.io/badge/platform-macOS-111111)
+![Swift](https://img.shields.io/badge/Swift-6.0-orange)
+![SwiftPM](https://img.shields.io/badge/SwiftPM-compatible-brightgreen)
+
 KamiNotch is a menubar-only macOS terminal HUD that drops from the notch with a clean liquid-glass look. It keeps your shell running when collapsed, so you can pop it open and keep working.
 
 **Status**
