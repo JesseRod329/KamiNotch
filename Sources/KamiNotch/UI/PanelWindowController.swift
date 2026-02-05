@@ -27,15 +27,15 @@ final class PanelWindowController {
         let initialSize = panelState.sizePreset.baseSize
         panel = NotchPanel(
             contentRect: NSRect(x: 0, y: 0, width: initialSize.width, height: initialSize.height),
-            styleMask: [.titled, .fullSizeContentView],
+            styleMask: [.borderless, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
         panel.isFloatingPanel = true
         panel.level = .floating
-        panel.titleVisibility = .hidden
-        panel.titlebarAppearsTransparent = true
         panel.isOpaque = false
+        panel.isMovable = false
+        panel.hidesOnDeactivate = false
         panel.backgroundColor = .clear
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.contentView = contentView
@@ -84,10 +84,12 @@ final class PanelWindowController {
     }
 
     private func positionUnderNotch(on screen: NSScreen) {
+        // Lift into the menu bar region so the glass cutout aligns with the hardware notch.
+        let menuBarHeight = screen.frame.maxY - screen.visibleFrame.maxY
         let width = panel.frame.width
         let height = panel.frame.height
         let originX = screen.frame.midX - (width / 2)
-        let originY = screen.frame.maxY - height
+        let originY = screen.frame.maxY - height + menuBarHeight
         panel.setFrameOrigin(CGPoint(x: originX, y: originY))
     }
 }
