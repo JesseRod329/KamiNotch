@@ -10,6 +10,7 @@ struct TerminalPanelView: View {
             HStack {
                 WorkspaceSwitcherView()
                 Spacer()
+                ThemePresetMenuView()
             }
 
             TabBarView()

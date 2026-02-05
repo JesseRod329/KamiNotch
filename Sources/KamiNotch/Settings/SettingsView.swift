@@ -3,12 +3,16 @@ import SwiftUI
 
 struct SettingsView: View {
     var body: some View {
-        Form {
-            Section("Hotkey") {
-                KeyboardShortcuts.Recorder(for: HotkeyName.globalToggle)
+        TabView {
+            Form {
+                Section("Hotkey") {
+                    KeyboardShortcuts.Recorder(for: HotkeyName.globalToggle)
+                }
             }
+            .tabItem { Text("General") }
+
+            ThemeSettingsView()
+                .tabItem { Text("Theme") }
         }
-        .padding(24)
-        .frame(width: 420)
     }
 }

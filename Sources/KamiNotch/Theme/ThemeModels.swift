@@ -46,3 +46,35 @@ struct ThemeState: Codable, Equatable {
     var selectedPresetID: UUID?
     var presets: [ThemePreset]
 }
+
+extension Theme {
+    func withTint(_ color: Color) -> Theme {
+        var copy = self
+        copy.tint = ThemeColor.from(color: color)
+        return copy
+    }
+
+    func withBlur(_ value: Double) -> Theme {
+        var copy = self
+        copy.blurStrength = value
+        return copy
+    }
+
+    func withGlow(_ value: Double) -> Theme {
+        var copy = self
+        copy.glowIntensity = value
+        return copy
+    }
+
+    func withFontName(_ name: String) -> Theme {
+        var copy = self
+        copy.fontName = name
+        return copy
+    }
+
+    func withFontSize(_ size: Double) -> Theme {
+        var copy = self
+        copy.fontSize = size
+        return copy
+    }
+}

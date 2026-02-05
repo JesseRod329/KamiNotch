@@ -11,13 +11,15 @@ final class PanelWindowController {
         rootView: AnyView,
         panelState: PanelState,
         terminalManager: TerminalSessionManager,
-        workspaceStore: WorkspaceStore
+        workspaceStore: WorkspaceStore,
+        themeStore: ThemeStore
     ) {
         let contentView = NSHostingView(
             rootView: rootView
                 .environmentObject(panelState)
                 .environmentObject(terminalManager)
                 .environmentObject(workspaceStore)
+                .environmentObject(themeStore)
         )
         panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 600, height: 360),
