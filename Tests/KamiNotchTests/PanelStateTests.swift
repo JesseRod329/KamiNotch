@@ -7,4 +7,10 @@ final class PanelStateTests: XCTestCase {
         let state = PanelState()
         XCTAssertFalse(state.isVisible)
     }
+
+    func test_toggle_changes_visibility() {
+        let state = PanelState()
+        state.toggle()
+        XCTAssertTrue(state.isVisible)
+    }
 }
