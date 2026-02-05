@@ -13,4 +13,9 @@ final class PanelStateTests: XCTestCase {
         state.toggle()
         XCTAssertTrue(state.isVisible)
     }
+
+    func test_default_size_is_compact() {
+        let state = PanelState()
+        XCTAssertEqual(state.sizePreset, .compact)
+    }
 }

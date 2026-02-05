@@ -16,7 +16,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         item.button?.target = self
         statusItem = item
 
-        panelController = PanelWindowController(rootView: AnyView(PanelView()))
+        panelController = PanelWindowController(rootView: AnyView(PanelView()), panelState: panelState)
     }
 
     @objc private func togglePanel() {
