@@ -7,9 +7,13 @@ let package = Package(
     products: [
         .executable(name: "KamiNotch", targets: ["KamiNotch"])
     ],
+    dependencies: [
+        .package(url: "https://github.com/sindresorhus/KeyboardShortcuts", from: "1.16.0")
+    ],
     targets: [
         .executableTarget(
             name: "KamiNotch",
+            dependencies: ["KeyboardShortcuts"],
             path: "Sources/KamiNotch"
         ),
         .testTarget(
