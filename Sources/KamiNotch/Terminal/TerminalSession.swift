@@ -13,10 +13,10 @@ final class TerminalSession: Identifiable {
         self.view = view
     }
 
-    static func makeDefault() -> TerminalSession {
+    static func makeDefault(id: UUID) -> TerminalSession {
         let view = LocalProcessTerminalView(frame: .zero)
         let shell = ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
         view.startProcess(executable: shell, args: ["-l"])
-        return TerminalSession(id: UUID(), title: "Shell", view: view)
+        return TerminalSession(id: id, title: "Shell", view: view)
     }
 }

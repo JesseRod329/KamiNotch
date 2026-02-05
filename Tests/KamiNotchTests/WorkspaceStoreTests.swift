@@ -9,8 +9,8 @@ final class WorkspaceStoreTests: XCTestCase {
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         let fileURL = tempDir.appendingPathComponent("workspaces.json")
         let persistence = WorkspacePersistence(fileURL: fileURL)
-        let terminalManager = TerminalSessionManager(factory: {
-            TerminalSession(id: UUID(), title: "Test", view: LocalProcessTerminalView(frame: .zero))
+        let terminalManager = TerminalSessionManager(factory: { id in
+            TerminalSession(id: id, title: "Test", view: LocalProcessTerminalView(frame: .zero))
         })
 
         let store = WorkspaceStore(persistence: persistence, terminalManager: terminalManager)
