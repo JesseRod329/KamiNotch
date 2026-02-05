@@ -17,6 +17,9 @@ final class TerminalSessionManager: ObservableObject {
         activeSessionID = session.id
     }
 
+    func hydrate(workspaceID: UUID, tabs: [WorkspaceTab]) {
+    }
+
     var activeSession: TerminalSession? {
         sessions.first { $0.id == activeSessionID }
     }
