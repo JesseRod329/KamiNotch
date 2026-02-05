@@ -10,6 +10,16 @@ struct ThemePresetMenuView: View {
             }
         } label: {
             Image(systemName: "paintpalette")
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white.opacity(0.18), lineWidth: 0.5)
+                        )
+                )
         }
     }
 }

@@ -9,11 +9,15 @@ struct GlassBackgroundView: View {
             .fill(material(for: theme.blurStrength))
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(theme.tint.swiftUIColor.opacity(0.25))
+                    .fill(theme.tint.swiftUIColor.opacity(0.12))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(Color.white.opacity(0.22), lineWidth: 0.6)
             )
             .shadow(
                 color: theme.tint.swiftUIColor.opacity(theme.glowIntensity * 0.6),
-                radius: CGFloat(24 * theme.glowIntensity),
+                radius: CGFloat(16 * theme.glowIntensity),
                 x: 0,
                 y: 0
             )

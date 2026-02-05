@@ -22,8 +22,9 @@ final class PanelWindowController {
                 .environmentObject(workspaceStore)
                 .environmentObject(themeStore)
         )
+        let initialSize = panelState.sizePreset.windowSize
         panel = NotchPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 600, height: 360),
+            contentRect: NSRect(x: 0, y: 0, width: initialSize.width, height: initialSize.height),
             styleMask: [.titled, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -43,14 +44,9 @@ final class PanelWindowController {
     }
 
     private func resize(for preset: PanelSizePreset) {
-        let height: CGFloat
-        switch preset {
-        case .compact: height = 360
-        case .tall: height = 540
-        case .full: height = 720
-        }
+        let size = preset.windowSize
         var frame = panel.frame
-        frame.size.height = height
+        frame.size = size
         panel.setFrame(frame, display: true, animate: true)
         if let screen = anchorScreen ?? panel.screen {
             positionUnderNotch(on: screen)

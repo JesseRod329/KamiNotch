@@ -6,20 +6,29 @@ struct PanelView: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            Picker("Size", selection: $panelState.sizePreset) {
-                ForEach(PanelSizePreset.allCases, id: \.self) { preset in
-                    Text(preset.rawValue.capitalized).tag(preset)
-                }
-            }
-            .pickerStyle(.segmented)
+            SizePresetPicker(selection: $panelState.sizePreset)
 
             ZStack {
                 GlassBackgroundView()
                 TerminalPanelView()
                     .padding(12)
             }
-            .frame(width: 600, height: 320)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .padding(16)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct SizePresetPicker: View {
+    @Binding var selection: PanelSizePreset
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(PanelSizePreset.allCases, id: \.self) { preset in
+                Button(preset.label) { selection = preset }
+                    .buttonStyle(GlassPillButtonStyle(isSelected: selection == preset))
+            }
+        }
     }
 }

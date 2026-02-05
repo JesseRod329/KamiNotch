@@ -20,6 +20,16 @@ struct WorkspaceSwitcherView: View {
                 Image(systemName: "chevron.down")
                     .font(.caption)
             }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(
+                Capsule()
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white.opacity(0.18), lineWidth: 0.5)
+                    )
+            )
         }
         .sheet(isPresented: $isRenaming) {
             VStack(spacing: 12) {
