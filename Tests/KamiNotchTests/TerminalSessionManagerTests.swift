@@ -4,11 +4,15 @@ import SwiftTerm
 
 @MainActor
 final class TerminalSessionManagerTests: XCTestCase {
-    func test_create_session_adds_session() {
-        let manager = TerminalSessionManager(factory: {
-            TerminalSession(id: UUID(), title: "Test", view: LocalProcessTerminalView(frame: .zero))
+    func test_sessions_scoped_to_workspace() {
+        let manager = TerminalSessionManager(factory: { id in
+            TerminalSession(id: id, title: "Test", view: LocalProcessTerminalView(frame: .zero))
         })
-        manager.createSession()
-        XCTAssertEqual(manager.sessions.count, 1)
+        let workspaceA = UUID()
+        let workspaceB = UUID()
+        manager.createSession(workspaceID: workspaceA, tabID: UUID())
+        manager.createSession(workspaceID: workspaceB, tabID: UUID())
+        XCTAssertEqual(manager.sessions(for: workspaceA).count, 1)
+        XCTAssertEqual(manager.sessions(for: workspaceB).count, 1)
     }
 }
