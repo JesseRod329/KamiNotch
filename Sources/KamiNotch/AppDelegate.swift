@@ -4,6 +4,8 @@ import SwiftUI
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let panelState = PanelState()
+    private let preferences = AppPreferences()
+    private let hotkeyManager = HotkeyManager()
     private var statusItem: NSStatusItem?
     private var panelController: PanelWindowController?
 
@@ -17,6 +19,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = item
 
         panelController = PanelWindowController(rootView: AnyView(PanelView()), panelState: panelState)
+
+        hotkeyManager.registerToggle(action: { [weak self] in
+            self?.togglePanel()
+        })
     }
 
     @objc private func togglePanel() {
