@@ -25,10 +25,16 @@ struct NotchGlassShape: Shape {
             width: clampedNotchWidth,
             height: clampedNotchHeight
         )
-        path.addRoundedRect(
-            in: notchRect,
-            cornerSize: CGSize(width: notchCornerRadius, height: notchCornerRadius)
+        let notchCutout = UnevenRoundedRectangle(
+            cornerRadii: RectangleCornerRadii(
+                topLeading: 0,
+                bottomLeading: notchCornerRadius,
+                bottomTrailing: notchCornerRadius,
+                topTrailing: 0
+            ),
+            style: .continuous
         )
+        path.addPath(notchCutout.path(in: notchRect))
         return path
     }
 }
