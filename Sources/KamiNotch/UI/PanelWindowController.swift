@@ -54,12 +54,12 @@ final class PanelWindowController {
         }
 
         if preset == .full {
-            let frame = screen.visibleFrame
+            let frame = screen.frame
             panel.setFrame(frame, display: true, animate: true)
             return
         }
 
-        let maxSize = screen.visibleFrame.size
+        let maxSize = screen.frame.size
         let size = preset.baseSize
         let clamped = CGSize(
             width: min(size.width, maxSize.width * 0.98),
@@ -84,12 +84,10 @@ final class PanelWindowController {
     }
 
     private func positionUnderNotch(on screen: NSScreen) {
-        let menuBarHeight = screen.frame.maxY - screen.visibleFrame.maxY
-        let topInset = max(menuBarHeight, 28)
         let width = panel.frame.width
         let height = panel.frame.height
         let originX = screen.frame.midX - (width / 2)
-        let originY = screen.frame.maxY - topInset - height - 6
+        let originY = screen.frame.maxY - height
         panel.setFrameOrigin(CGPoint(x: originX, y: originY))
     }
 }
