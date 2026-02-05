@@ -13,6 +13,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let themeStore: ThemeStore
     private var statusItem: NSStatusItem?
     private var panelController: PanelWindowController?
+    private var notchHitController: NotchHitWindowController?
 
     override init() {
         terminalManager = TerminalSessionManager()
@@ -38,6 +39,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             themeStore: themeStore
         )
 
+        notchHitController = NotchHitWindowController(onTap: { [weak self] in
+            self?.togglePanel()
+        })
+        notchHitController?.show()
+
         hotkeyManager.registerToggle(action: { [weak self] in
             self?.togglePanel()
         })
@@ -50,10 +56,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func togglePanel() {
         panelState.toggle()
-        if panelState.isVisible, let button = statusItem?.button {
-            let frame = button.window?.convertToScreen(button.frame) ?? .zero
-            let origin = CGPoint(x: frame.minX - 200, y: frame.minY - 380)
-            panelController?.show(at: origin)
+        if panelState.isVisible {
+            let screen = statusItem?.button?.window?.screen ?? NSScreen.main
+            panelController?.show(on: screen)
         } else {
             panelController?.hide()
         }

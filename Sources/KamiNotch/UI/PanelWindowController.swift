@@ -6,6 +6,7 @@ import SwiftUI
 final class PanelWindowController {
     private let panel: NSPanel
     private var observation: Any?
+    private var anchorScreen: NSScreen?
 
     init(
         rootView: AnyView,
@@ -21,9 +22,9 @@ final class PanelWindowController {
                 .environmentObject(workspaceStore)
                 .environmentObject(themeStore)
         )
-        panel = NSPanel(
+        panel = NotchPanel(
             contentRect: NSRect(x: 0, y: 0, width: 600, height: 360),
-            styleMask: [.nonactivatingPanel, .fullSizeContentView],
+            styleMask: [.titled, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
@@ -33,6 +34,7 @@ final class PanelWindowController {
         panel.titlebarAppearsTransparent = true
         panel.isOpaque = false
         panel.backgroundColor = .clear
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.contentView = contentView
 
         observation = panelState.$sizePreset.sink { [weak self] preset in
@@ -50,14 +52,37 @@ final class PanelWindowController {
         var frame = panel.frame
         frame.size.height = height
         panel.setFrame(frame, display: true, animate: true)
+        if let screen = anchorScreen ?? panel.screen {
+            positionUnderNotch(on: screen)
+        }
     }
 
-    func show(at origin: CGPoint) {
-        panel.setFrameOrigin(origin)
-        panel.orderFront(nil)
+    func show(on screen: NSScreen?) {
+        let targetScreen = screen ?? NSScreen.main
+        anchorScreen = targetScreen
+        if let targetScreen {
+            positionUnderNotch(on: targetScreen)
+        }
+        panel.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     func hide() {
         panel.orderOut(nil)
     }
+
+    private func positionUnderNotch(on screen: NSScreen) {
+        let menuBarHeight = screen.frame.maxY - screen.visibleFrame.maxY
+        let topInset = max(menuBarHeight, 28)
+        let width = panel.frame.width
+        let height = panel.frame.height
+        let originX = screen.frame.midX - (width / 2)
+        let originY = screen.frame.maxY - topInset - height - 6
+        panel.setFrameOrigin(CGPoint(x: originX, y: originY))
+    }
+}
+
+private final class NotchPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
 }

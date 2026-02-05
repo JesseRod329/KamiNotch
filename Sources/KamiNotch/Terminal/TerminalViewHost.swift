@@ -11,5 +11,8 @@ struct TerminalViewHost: NSViewRepresentable {
 
     func updateNSView(_ nsView: LocalProcessTerminalView, context: Context) {
         nsView.font = font
+        if nsView.window?.firstResponder !== nsView {
+            nsView.window?.makeFirstResponder(nsView)
+        }
     }
 }
