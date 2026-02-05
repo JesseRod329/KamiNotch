@@ -1,4 +1,5 @@
 import AppKit
+import KeyboardShortcuts
 import SwiftUI
 
 @MainActor
@@ -6,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let panelState = PanelState()
     private let preferences = AppPreferences()
     private let hotkeyManager = HotkeyManager()
+    private let hotkeySetupWindow = HotkeySetupWindowController()
     private var statusItem: NSStatusItem?
     private var panelController: PanelWindowController?
 
@@ -23,6 +25,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkeyManager.registerToggle(action: { [weak self] in
             self?.togglePanel()
         })
+
+        if KeyboardShortcuts.getShortcut(for: HotkeyName.globalToggle) == nil,
+           !preferences.hasCompletedHotkeySetup {
+            hotkeySetupWindow.show(preferences: preferences)
+        }
     }
 
     @objc private func togglePanel() {
