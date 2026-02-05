@@ -19,7 +19,6 @@ jobs:
         env:
           MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
           MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
-          MACOS_CERTIFICATE_NAME: ${{ secrets.MACOS_CERTIFICATE_NAME }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
@@ -27,7 +26,6 @@ jobs:
           REQUIRED=(
             MACOS_CERTIFICATE_P12_BASE64
             MACOS_CERTIFICATE_PASSWORD
-            MACOS_CERTIFICATE_NAME
             APPLE_ID
             APPLE_TEAM_ID
             APPLE_APP_SPECIFIC_PASSWORD
@@ -61,18 +59,27 @@ jobs:
           security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$MACOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
 
+          CODESIGN_IDENTITY="$(
+            security find-identity -v -p codesigning "$KEYCHAIN_PATH" \
+              | awk -F\" '/Developer ID Application:/ {print $2; exit}'
+          )"
+          if [[ -z "$CODESIGN_IDENTITY" ]]; then
+            echo "error: no Developer ID Application identity found in imported keychain" >&2
+            security find-identity -v -p codesigning "$KEYCHAIN_PATH" || true
+            exit 1
+          fi
+
           echo "keychain=$KEYCHAIN_PATH" >> "$GITHUB_OUTPUT"
+          echo "codesign_identity=$CODESIGN_IDENTITY" >> "$GITHUB_OUTPUT"
 
       - name: Build signed DMG
-        env:
-          MACOS_CERTIFICATE_NAME: ${{ secrets.MACOS_CERTIFICATE_NAME }}
         run: |
           chmod +x scripts/create-dmg.sh
           VERSION="${GITHUB_REF_NAME#v}" \
           BUNDLE_SHORT_VERSION="${GITHUB_REF_NAME#v}" \
           BUNDLE_VERSION="${GITHUB_REF_NAME#v}" \
           OUTPUT_NAME="KamiNotch.dmg" \
-          CODESIGN_IDENTITY="$MACOS_CERTIFICATE_NAME" \
+          CODESIGN_IDENTITY="${{ steps.signing.outputs.codesign_identity }}" \
           scripts/create-dmg.sh
 
       - name: Store notarytool credentials
