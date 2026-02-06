@@ -95,12 +95,12 @@ jobs:
             --keychain "${{ steps.signing.outputs.keychain }}"
 
       - name: Notarize and staple DMG
-        timeout-minutes: 40
+        timeout-minutes: 130
         run: |
           chmod +x scripts/notarize-dmg.sh
           NOTARY_PROFILE="KAMINOTCH_NOTARY" \
           NOTARY_KEYCHAIN="${{ steps.signing.outputs.keychain }}" \
-          NOTARY_WAIT_TIMEOUT="30m" \
+          NOTARY_WAIT_TIMEOUT="2h" \
           NOTARY_LOG_PATH="$RUNNER_TEMP/notary-log.json" \
           scripts/notarize-dmg.sh dist/KamiNotch.dmg
 
