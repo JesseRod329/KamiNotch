@@ -95,11 +95,22 @@ jobs:
             --keychain "${{ steps.signing.outputs.keychain }}"
 
       - name: Notarize and staple DMG
+        timeout-minutes: 40
         run: |
           chmod +x scripts/notarize-dmg.sh
           NOTARY_PROFILE="KAMINOTCH_NOTARY" \
           NOTARY_KEYCHAIN="${{ steps.signing.outputs.keychain }}" \
+          NOTARY_WAIT_TIMEOUT="30m" \
+          NOTARY_LOG_PATH="$RUNNER_TEMP/notary-log.json" \
           scripts/notarize-dmg.sh dist/KamiNotch.dmg
+
+      - name: Upload notary log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: notary-log-${{ github.ref_name }}
+          path: ${{ runner.temp }}/notary-log.json
+          if-no-files-found: ignore
 
       - name: Verify signed and notarized artifacts
         run: |
