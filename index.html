@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090b10">
+  <meta name="description" content="KamiNotch is a liquid-glass terminal HUD for macOS.">
+  <title>KamiNotch — Terminal, right where you need it</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #f1f5f7;
+      --muted: #9ca8b3;
+      --line: rgba(194, 214, 226, .16);
+      --panel: rgba(19, 25, 31, .72);
+      --cyan: #75e6dc;
+      --cyan-strong: #44cfc6;
+      --orange: #ffac67;
+      --bg: #090b10;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: Manrope, sans-serif;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background:
+        radial-gradient(circle at 78% 12%, rgba(66, 177, 174, .20), transparent 26rem),
+        radial-gradient(circle at 8% 56%, rgba(56, 72, 110, .20), transparent 28rem),
+        linear-gradient(135deg, #090b10 0%, #10151b 52%, #090b0f 100%);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: .18;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.3'/%3E%3C/svg%3E");
+      mix-blend-mode: soft-light;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(1120px, calc(100% - 44px)); margin: 0 auto; }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 26px 0;
+      font-family: "DM Mono", monospace;
+      font-size: .76rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .brand { display: inline-flex; align-items: center; gap: 11px; font-weight: 500; }
+    .brand-mark {
+      width: 24px; height: 14px; border: 1px solid var(--cyan); border-radius: 0 0 10px 10px;
+      border-top: 0; box-shadow: 0 4px 14px rgba(117, 230, 220, .25);
+    }
+    .nav-links { display: flex; gap: 25px; color: var(--muted); }
+    .nav-links a:hover { color: var(--ink); }
+
+    .hero { min-height: 690px; display: grid; grid-template-columns: 1.02fr .98fr; align-items: center; gap: 56px; padding: 58px 0 100px; }
+    .eyebrow { color: var(--cyan); font: 500 .74rem/1 "DM Mono", monospace; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { max-width: 650px; margin: 21px 0 25px; font-size: clamp(3.3rem, 7vw, 6.6rem); line-height: .96; letter-spacing: -.075em; font-weight: 700; }
+    h1 em { color: var(--cyan); font-style: normal; }
+    .hero-copy { max-width: 530px; margin: 0; color: var(--muted); font-size: 1.07rem; }
+    .actions { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; margin-top: 35px; }
+    .button { display: inline-flex; align-items: center; gap: 10px; padding: 14px 19px; border: 1px solid var(--cyan); border-radius: 7px; color: #071113; background: var(--cyan); font-weight: 800; transition: transform .2s, background .2s, box-shadow .2s; }
+    .button:hover { transform: translateY(-2px); background: #a3f3ed; box-shadow: 0 10px 30px rgba(117, 230, 220, .17); }
+    .text-link { color: var(--ink); font-size: .9rem; border-bottom: 1px solid var(--line); padding-bottom: 3px; }
+    .text-link:hover { border-color: var(--cyan); color: var(--cyan); }
+    .meta { display: flex; gap: 25px; margin-top: 25px; color: #687581; font: .7rem "DM Mono", monospace; text-transform: uppercase; letter-spacing: .05em; }
+
+    .notch-stage { position: relative; min-height: 460px; display: grid; place-items: center; }
+    .notch-stage::before { content: ""; position: absolute; width: 380px; height: 380px; border-radius: 50%; background: rgba(98, 211, 205, .08); filter: blur(50px); }
+    .notch { position: relative; width: min(420px, 100%); padding: 12px 13px 16px; border: 1px solid rgba(210, 229, 238, .24); border-top: 0; border-radius: 0 0 28px 28px; background: linear-gradient(145deg, rgba(52, 66, 75, .76), rgba(9, 14, 19, .9)); box-shadow: 0 35px 90px rgba(0, 0, 0, .45), inset 0 1px rgba(255, 255, 255, .12); animation: float 7s ease-in-out infinite; }
+    .notch::before { content: ""; position: absolute; top: 0; left: 50%; width: 86px; height: 5px; transform: translateX(-50%); border-radius: 0 0 8px 8px; background: #050608; box-shadow: 0 0 13px rgba(117, 230, 220, .35); }
+    .notch-top { display: flex; justify-content: space-between; align-items: center; padding: 8px 8px 11px; color: #81919a; font: .67rem "DM Mono", monospace; }
+    .dot { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+    .terminal { padding: 20px 20px 17px; min-height: 225px; border: 1px solid rgba(194, 214, 226, .12); border-radius: 16px; background: rgba(4, 8, 11, .68); color: #c1cbd0; font: .78rem/1.85 "DM Mono", monospace; }
+    .terminal .dim { color: #61717c; } .terminal .green { color: var(--cyan); } .terminal .orange { color: var(--orange); }
+    .terminal .cursor { display: inline-block; width: 8px; height: 16px; vertical-align: -3px; background: var(--cyan); animation: blink 1.1s step-end infinite; }
+
+    section { padding: 100px 0; border-top: 1px solid var(--line); }
+    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 30px; margin-bottom: 42px; }
+    h2 { max-width: 510px; margin: 14px 0 0; font-size: clamp(2rem, 4vw, 3.7rem); line-height: 1; letter-spacing: -.06em; }
+    .section-intro { max-width: 310px; margin: 0; color: var(--muted); font-size: .9rem; }
+    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; overflow: hidden; border: 1px solid var(--line); background: var(--line); }
+    .feature { min-height: 230px; padding: 26px; background: rgba(10, 15, 20, .69); }
+    .feature:hover { background: rgba(29, 42, 47, .78); }
+    .feature-number { color: var(--cyan); font: .72rem "DM Mono", monospace; }
+    .feature h3 { margin: 56px 0 10px; font-size: 1.15rem; letter-spacing: -.03em; }
+    .feature p { margin: 0; color: var(--muted); font-size: .85rem; }
+
+    .download { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 40px; padding: 37px 40px; border: 1px solid rgba(117, 230, 220, .25); background: linear-gradient(115deg, rgba(27, 52, 55, .65), rgba(17, 23, 30, .48)); }
+    .download h2 { font-size: clamp(1.8rem, 3vw, 2.8rem); }
+    .download p { margin: 12px 0 0; color: var(--muted); font-size: .9rem; }
+    footer { display: flex; justify-content: space-between; gap: 20px; padding: 25px 0 40px; color: #687581; font: .68rem "DM Mono", monospace; text-transform: uppercase; letter-spacing: .05em; }
+
+    @keyframes float { 0%, 100% { transform: translateY(0) rotate(.3deg); } 50% { transform: translateY(-12px) rotate(-.3deg); } }
+    @keyframes blink { 50% { opacity: 0; } }
+    @media (max-width: 800px) { .hero { grid-template-columns: 1fr; padding-top: 35px; } .notch-stage { min-height: 370px; } .feature-grid { grid-template-columns: 1fr; } .section-head { display: block; } .section-intro { margin-top: 18px; } .download { grid-template-columns: 1fr; padding: 28px; } }
+    @media (max-width: 500px) { .wrap { width: min(100% - 30px, 1120px); } .nav-links { gap: 12px; font-size: .62rem; } .nav-links a:first-child { display: none; } .hero { min-height: auto; padding-bottom: 80px; } h1 { font-size: 3.35rem; } .meta { display: block; line-height: 2; } .meta span { margin-right: 12px; } footer { display: block; line-height: 2; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .notch { animation: none; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav aria-label="Primary navigation">
+      <a class="brand" href="."><span class="brand-mark" aria-hidden="true"></span><span>KamiNotch</span></a>
+      <div class="nav-links"><a href="#features">Capabilities</a><a href="https://github.com/JesseRod329/KamiNotch">GitHub ↗</a></div>
+    </nav>
+
+    <main>
+      <section class="hero" style="border-top: 0; padding-top: 30px;">
+        <div>
+          <div class="eyebrow">A terminal HUD for macOS</div>
+          <h1>Your shell,<br><em>in the notch.</em></h1>
+          <p class="hero-copy">KamiNotch keeps a fast, full-featured terminal one shortcut away—quiet when you need focus, right there when you need to move.</p>
+          <div class="actions"><a class="button" href="https://github.com/JesseRod329/KamiNotch/releases/latest/download/KamiNotch.dmg">Download for macOS <span aria-hidden="true">↓</span></a><a class="text-link" href="https://github.com/JesseRod329/KamiNotch">Explore the source ↗</a></div>
+          <div class="meta"><span>macOS 15+</span><span>Swift 6</span><span>Open source</span></div>
+        </div>
+        <div class="notch-stage" aria-label="Illustration of the KamiNotch terminal HUD">
+          <div class="notch">
+            <div class="notch-top"><span><i class="dot"></i>kami / workspace 01</span><span>⌘ K</span></div>
+            <div class="terminal"><div class="dim">last login: today on ttys001</div><div><span class="green">➜</span> <span class="orange">~</span> git status</div><div class="dim">On branch main</div><div class="dim">Your branch is up to date.</div><br><div><span class="green">➜</span> <span class="orange">~</span> npm run ship <span class="cursor"></span></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="features">
+        <div class="section-head"><div><div class="eyebrow">Small surface. Serious utility.</div><h2>Always close.<br>Never in the way.</h2></div><p class="section-intro">Designed for the moments between windows: a quick command, a status check, a thought that should keep moving.</p></div>
+        <div class="feature-grid">
+          <article class="feature"><div class="feature-number">01 / TERMINAL</div><h3>A real shell, not a mockup</h3><p>Run your local shell through SwiftTerm with the commands, history, and workflow you already use.</p></article>
+          <article class="feature"><div class="feature-number">02 / WORKSPACES</div><h3>Tabs that remember context</h3><p>Group terminals into persistent workspaces, so each project opens where you left it.</p></article>
+          <article class="feature"><div class="feature-number">03 / ATMOSPHERE</div><h3>Make the glass yours</h3><p>Choose a preset or tune the liquid-glass theme to sit naturally inside your own setup.</p></article>
+        </div>
+      </section>
+
+      <section>
+        <div class="download"><div><div class="eyebrow">Ready when you are</div><h2>Put a terminal<br>in your periphery.</h2><p>Download the latest signed and notarized release for macOS.</p></div><a class="button" href="https://github.com/JesseRod329/KamiNotch/releases/latest/download/KamiNotch.dmg">Get KamiNotch <span aria-hidden="true">↓</span></a></div>
+      </section>
+    </main>
+
+    <footer><span>Independent project · Apache-2.0</span><span>Built for macOS · <a href="https://github.com/JesseRod329/KamiNotch">View on GitHub ↗</a></span></footer>
+  </div>
+</body>
+</html>
